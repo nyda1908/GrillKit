@@ -1,0 +1,10 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "senior_backend_interview",
+      "cv_text": "Name: Jane Doe\nRole: Senior Backend Engineer\nExperience: 5 years at TechCorp.\nSkills: Python, FastAPI, PostgreSQL, Redis, Kubernetes, GCP.\nAchievements:\n- Designed and built a real-time event streaming pipeline using Python and Redis Pub/Sub, processing 10k events/sec.\n- Re-architected PostgreSQL database schema, reducing query latencies by 40%.\n- Led migration of 15 microservices to Google Kubernetes Engine (GKE).",
+      "doc_text": "Project: EventStreamingPipeline\nOverview: A real-time data ingestion and processing system.\nArchitecture: Python FastAPI services receive HTTP payloads, validate them, and push them to Redis. A worker daemon consumes messages from Redis, aggregates metrics, and batches writes to PostgreSQL.\nKey Decisions:\n- Used Redis Pub/Sub for lightweight, sub-millisecond event dispatching.\n- Configured connection pool size of 20 for PostgreSQL to handle high concurrent database writes.\n- Implemented horizontal pod autoscaling (HPA) in Kubernetes based on CPU utilization to handle traffic spikes.",
+      "role": "Senior Backend Engineer"
+    }
+  ]
+}

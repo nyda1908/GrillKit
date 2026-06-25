@@ -25,6 +25,7 @@ from .skills.ingestion import ingestion_parser, validate_ingestion
 from .skills.extraction import extractor_agent
 from .skills.question_generation import QuestionList, question_generator_agent
 from .skills.interview_flow import conduct_interview
+from .skills.follow_up import follow_up_generator, save_followup
 from .skills.evaluation import evaluator_agent
 from .skills.state_tracking import process_evaluation
 from .skills.reporting import report_generator_agent
@@ -47,6 +48,7 @@ def initialize_interview(node_input: QuestionList) -> Event:
         state={
             "questions": node_input.questions,
             "current_index": 0,
+            "current_phase": "main",
             "evaluations": [],
             "weak_areas": []
         },
@@ -55,7 +57,6 @@ def initialize_interview(node_input: QuestionList) -> Event:
 
 
 # Workflow Graph Definition
-# Note: input_schema is omitted so START accepts plain conversational text from the chat
 root_agent = Workflow(
     name="grillkit_interview_workflow",
     description="AI-powered technical interview coach that conducts interactive, grounded interviews.",
@@ -74,19 +75,26 @@ root_agent = Workflow(
         (extractor_agent, question_generator_agent),
         (question_generator_agent, initialize_interview),
         
-        # Start the Q&A loop
+        # Start/Resume Q&A loop
         (initialize_interview, conduct_interview),
         
-        # Route depending on whether questions are left or complete
+        # Route from conduct_interview depending on the phase and completion
         (conduct_interview, {
+            "generate_followup": follow_up_generator,
             "evaluate": evaluator_agent,
             "complete": report_generator_agent
+        }),
+        
+        # Generate follow-up question and save to state, then loop back to ask it
+        (follow_up_generator, save_followup),
+        (save_followup, {
+            "ask_followup": conduct_interview
         }),
         
         # Evaluate candidate answer and update state
         (evaluator_agent, process_evaluation),
         
-        # Loop back to conduct the next question
+        # Loop back to conduct the next main question
         (process_evaluation, {
             "loop": conduct_interview
         }),

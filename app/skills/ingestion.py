@@ -10,9 +10,9 @@ from google.adk.workflow import node
 from google.genai import types
 
 class ParsedInterviewInput(BaseModel):
-    cv_text: str = Field(description="Extracted CV text of the candidate. If not found, return an empty string.")
-    doc_text: str = Field(description="Extracted project documentation text. If not found, return an empty string.")
-    role: str = Field(description="The target job role they are interviewing for. If not found, return 'Software Engineer'.")
+    cv_text: str = Field(description="Extracted CV text of the candidate. If not found, return an empty string.", default="")
+    doc_text: str = Field(description="Extracted project documentation text. If not found, return an empty string.", default="")
+    role: str = Field(description="The target job role they are interviewing for. If not found, return an empty string.", default="")
 
 # LLM Agent to parse plain conversational text or pastes into structured fields
 ingestion_parser = LlmAgent(
@@ -54,7 +54,7 @@ def extract_text_from_part(part: types.Part) -> str:
 
 @node(rerun_on_resume=True)
 async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
-    """Checks if we have both CV (from text or PDF) and project docs. If not, prompts the user."""
+    """Checks if we have CV (from text or PDF), project docs, and role. If not, prompts the user."""
     # Retrieve current state values
     cv_text = ctx.state.get("cv_text") or node_input.cv_text
     doc_text = ctx.state.get("doc_text") or node_input.doc_text
@@ -88,6 +88,7 @@ async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
             output=user_text,
             state={
                 "cv_text": cv_text,
+                "doc_text": doc_text,
                 "parsed_pdf": parsed_pdf,
                 "role": role
             },
@@ -95,15 +96,17 @@ async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
         )
         return
 
-    # 3. Check if we are missing CV or project docs
-    if not cv_text.strip() or not doc_text.strip():
+    # 3. Check if we are missing CV, project docs, or target job role
+    if not cv_text.strip() or not doc_text.strip() or not role.strip():
         missing = []
         if not cv_text.strip():
             missing.append("CV/Resume")
         if not doc_text.strip():
             missing.append("Project Documentation")
+        if not role.strip():
+            missing.append("Target Job Role")
         
-        # Persist the currently extracted materials in the session state before pausing
+        # Persist all currently extracted/parsed materials in the session state before pausing
         yield Event(
             state={
                 "cv_text": cv_text,
@@ -115,7 +118,7 @@ async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
         
         prompt_msg = (
             f"Welcome to GrillKit! I noticed you are missing your {', '.join(missing)}. "
-            "Please paste your CV/resume and/or project documentation as text below, "
+            "Please paste your CV/resume, project documentation as text, and/or state your target job role below, "
             "or upload a PDF file of your CV/Resume to begin."
         )
         yield RequestInput(
@@ -124,7 +127,7 @@ async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
         )
         return
         
-    # 4. If we have both, we save them to state and route to the claims extractor
+    # 4. If we have all three, we save them to state and route to the claims extractor
     yield Event(
         output={
             "cv_text": cv_text,

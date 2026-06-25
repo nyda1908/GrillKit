@@ -7,33 +7,71 @@ from typing import Any
 
 @node(rerun_on_resume=True)
 async def conduct_interview(ctx: Context, node_input: Any):
-    """Orchestrates the interview turns, asking questions and capturing answers."""
+    """Orchestrates the interview turns, handling main questions and follow-ups."""
     # Retrieve current state
     questions = ctx.state.get("questions", [])
     current_index = ctx.state.get("current_index", 0)
+    current_phase = ctx.state.get("current_phase", "main")
     
-    # Check if we have completed all questions in the queue
+    # 1. Check if we have completed all questions in the queue
     if current_index >= len(questions):
-        # We are finished! Route to report generation
         yield Event(output="interview_complete", route="complete")
         return
         
-    # Check if the user has provided an answer to the current question
-    interrupt_id = f"q_{current_index}"
-    if ctx.resume_inputs and interrupt_id in ctx.resume_inputs:
-        user_answer = ctx.resume_inputs[interrupt_id]
+    interrupt_id_main = f"q_{current_index}"
+    interrupt_id_followup = f"f_{current_index}"
+    
+    # 2. Check if we are in the "main" phase and the user has just answered
+    if current_phase == "main" and ctx.resume_inputs and interrupt_id_main in ctx.resume_inputs:
+        user_answer = ctx.resume_inputs[interrupt_id_main]
         current_question = questions[current_index]
         
-        # Yield the question and answer to trigger the evaluation node
+        # Save their main answer to state, transition to "follow_up" phase, and route to follow-up generator
         yield Event(
-            output={"question": current_question, "answer": user_answer},
+            output={
+                "main_question": current_question,
+                "main_answer": user_answer
+            },
+            state={
+                "current_main_question": current_question,
+                "current_main_answer": user_answer,
+                "current_phase": "follow_up"
+            },
+            route="generate_followup"
+        )
+        return
+        
+    # 3. Check if we are in the "follow_up" phase and the user has just answered
+    if current_phase == "follow_up" and ctx.resume_inputs and interrupt_id_followup in ctx.resume_inputs:
+        followup_answer = ctx.resume_inputs[interrupt_id_followup]
+        main_question = ctx.state.get("current_main_question")
+        main_answer = ctx.state.get("current_main_answer")
+        followup_question = ctx.state.get("current_follow_up_question")
+        
+        # We now have both answers! Yield them together to trigger the evaluator agent
+        yield Event(
+            output={
+                "question": main_question,
+                "answer": main_answer,
+                "followup_question": followup_question,
+                "followup_answer": followup_answer
+            },
             route="evaluate"
         )
         return
         
-    # If the user has not answered yet, yield a RequestInput to pause and ask the question
-    current_question = questions[current_index]
-    yield RequestInput(
-        interrupt_id=interrupt_id,
-        message=f"\n[Question {current_index + 1}/{len(questions)}] {current_question}\n"
-    )
+    # 4. If the user hasn't answered yet, ask the appropriate question based on the current phase
+    if current_phase == "main":
+        current_question = questions[current_index]
+        yield RequestInput(
+            interrupt_id=interrupt_id_main,
+            message=f"\n[Question {current_index + 1}/{len(questions)}] {current_question}\n"
+        )
+        return
+    elif current_phase == "follow_up":
+        followup_question = ctx.state.get("current_follow_up_question")
+        yield RequestInput(
+            interrupt_id=interrupt_id_followup,
+            message=f"\n[Follow-up] {followup_question}\n"
+        )
+        return

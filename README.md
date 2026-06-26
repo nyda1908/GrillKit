@@ -2,7 +2,7 @@
 
 **AI-powered technical interview coach that grills you on your own CV.**
 
-GrillKit reads your CV and project documentation, extracts every technical claim you've made, and conducts a rigorous mock interview grounded in your actual work. It evaluates your answers, tracks where you're weak, and generates a detailed report at the end — so you know exactly what to fix before the real thing.
+GrillKit reads your CV and project documentation, extracts every technical claim you've made, and conducts a rigorous mock interview grounded in your actual work. It evaluates your answers, tracks where you're weak, and generates a detailed report at the end- so you know exactly what to fix before the real thing.
 
 Built with Google ADK 2.0 and Agents CLI as part of the [Kaggle 5-Day AI Agents Intensive Course with Google](https://www.kaggle.com/competitions/5-day-ai-agents-intensive-vibecoding-course-with-google).
 
@@ -18,10 +18,10 @@ Placement season is brutal. You have a CV full of projects but no good way to pr
 
 A plain LLM chat can answer questions about your CV if you paste it in. GrillKit is different:
 
-- **Structured pipeline** — every user goes through the same rigorous flow: ingest → extract claims → generate grounded questions → evaluate answers → track weaknesses → report. The output is consistent and repeatable.
-- **Persistent session state** — GrillKit tracks your answers across all 10 questions, accumulates your weakness pattern, and synthesizes everything into a final report. A chatbot forgets Q3 by Q7.
-- **PDF upload** — upload your actual CV file. GrillKit parses and extracts the text automatically.
-- **Deployable system** — not a prompt, a product. Anyone can upload their CV and get grilled.
+- **Structured pipeline**: every user goes through the same rigorous flow: ingest → extract claims → generate grounded questions → evaluate answers → track weaknesses → report. The output is consistent and repeatable.
+- **Persistent session state**: GrillKit tracks your answers across all 10 questions, accumulates your weakness pattern, and synthesizes everything into a final report. A chatbot forgets Q3 by Q7.
+- **PDF upload**: upload your actual CV file. GrillKit parses and extracts the text automatically.
+- **Deployable system**: not a prompt, a product. Anyone can upload their CV and get grilled.
 
 ---
 
@@ -71,8 +71,8 @@ START
 
 | Concept | Where |
 |---|---|
-| Agent / Multi-agent system (ADK 2.0) | `app/agent.py` — graph workflow with 9 nodes and 9 edges |
-| Agent Skills (Agents CLI) | `app/skills/` — 7 modular skills with progressive disclosure |
+| Agent / Multi-agent system (ADK 2.0) | `app/agent.py`: graph workflow with 9 nodes and 9 edges |
+| Agent Skills (Agents CLI) | `app/skills/`: 7 modular skills with progressive disclosure |
 | Security features | Input sanitization in `ingestion.py`; no API keys in code; context boundary (agent only sees what the user uploads) |
 
 ---
@@ -120,8 +120,8 @@ Then open [http://127.0.0.1:8080/dev-ui/?app=app](http://127.0.0.1:8080/dev-ui/?
 1. **Start a new session** in the playground
 2. **Upload your CV as a PDF** using the + button, or paste your CV text directly
 3. **Specify your target role** (e.g. ML Engineer, Quant Research, Data Scientist)
-4. **Answer 10 questions** — each one grounded in something you actually claimed on your CV
-5. **Receive your report** — strong areas, weak areas, and suggested follow-up questions to practice
+4. **Answer 10 questions**: each one grounded in something you actually claimed on your CV
+5. **Receive your report**: strong areas, weak areas, and suggested follow-up questions to practice
 
 ---
 

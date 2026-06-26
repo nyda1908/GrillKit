@@ -27,18 +27,18 @@ A plain LLM chat can answer questions about your CV if you paste it in. GrillKit
 
 ## Architecture
 
-GrillKit is an ADK 2.0 graph workflow agent with 7 modular skills:
+GrillKit is an ADK 2.0 graph workflow agent with 8 modular skills:
 
 ```
 START
   └─► ingest_cv_docs        # Parse CV text or PDF, validate inputs
         └─► extractor_agent      # Extract technical claims, metrics, decisions
-              └─► question_generator_agent  # Generate 10 grounded interview questions
+              └─► question_generator_agent  # Generate grounded interview questions
                     └─► initialize_interview
-                          └─► conduct_interview  ◄─────────────┐
-                                ├─► evaluator_agent             │
-                                │     └─► process_evaluation ───┘ (loop)
-                                └─► report_generator_agent  (on complete)
+                          └─► conduct_interview  ◄──────────────────────────┐ (loop)
+                                ├─► follow_up_generator ──► save_followup ──┤ (follow-up)
+                                ├─► evaluator_agent ──► process_evaluation ─┘
+                                └─► report_generator_agent (on complete)
                                       └─► END
 ```
 
@@ -48,8 +48,9 @@ START
 |---|---|---|
 | Ingestion | `ingestion.py` | Parses CV text or PDF, validates inputs, persists state |
 | Extraction | `extraction.py` | Extracts claims, technical choices, metrics, and decisions |
-| Question Generation | `question_generation.py` | Generates 10 role-specific questions grounded in extracted claims |
+| Question Generation | `question_generation.py` | Generates role-specific questions grounded in extracted claims |
 | Interview Flow | `interview_flow.py` | Drives the multi-turn Q&A loop using ADK Human-in-the-Loop |
+| Follow-up Question | `follow_up.py` | Generates one adversarial follow-up question targeting the weakest part of the candidate's answer |
 | Evaluation | `evaluation.py` | Evaluates each answer for accuracy, depth, and vagueness |
 | State Tracking | `state_tracking.py` | Accumulates evaluations and tracks weak areas across the session |
 | Reporting | `reporting.py` | Generates a final Markdown report with strong areas, weak areas, and follow-up questions |
@@ -60,7 +61,7 @@ START
 
 - **Agent Framework**: Google ADK 2.0
 - **Scaffolding**: Agents CLI
-- **Model**: Gemini 2.5 Flash
+- **Model**: Gemini 2.0 Flash
 - **PDF Parsing**: pypdf
 - **Language**: Python 3.11+
 - **Package Manager**: uv
@@ -71,8 +72,8 @@ START
 
 | Concept | Where |
 |---|---|
-| Agent / Multi-agent system (ADK 2.0) | `app/agent.py`: graph workflow with 9 nodes and 9 edges |
-| Agent Skills (Agents CLI) | `app/skills/`: 7 modular skills with progressive disclosure |
+| Agent / Multi-agent system (ADK 2.0) | `app/agent.py`: graph workflow with 12 nodes and 14 edges |
+| Agent Skills (Agents CLI) | `app/skills/`: 8 modular skills with progressive disclosure |
 | Security features | Input sanitization in `ingestion.py`; no API keys in code; context boundary (agent only sees what the user uploads) |
 
 ---
@@ -157,6 +158,7 @@ GrillKit/
 │       ├── extraction.py
 │       ├── question_generation.py
 │       ├── interview_flow.py
+│       ├── follow_up.py
 │       ├── evaluation.py
 │       ├── state_tracking.py
 │       └── reporting.py

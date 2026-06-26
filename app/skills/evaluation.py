@@ -17,7 +17,7 @@ class EvaluationResult(BaseModel):
 
 evaluator_agent = LlmAgent(
     name="evaluator_agent",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction=(
         "You are an expert technical interviewer. Evaluate the candidate's answers to the main question "
         "and the subsequent follow-up question together. "

@@ -3,7 +3,7 @@ from google.adk.agents import LlmAgent
 
 report_generator_agent = LlmAgent(
     name="report_generator_agent",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction=(
         "You are GrillKit, an expert AI technical interview coach. "
         "Review the candidate's technical interview session and the CV/documentation claims. "

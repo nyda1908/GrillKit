@@ -21,7 +21,7 @@ class ExtractedProfile(BaseModel):
 
 extractor_agent = LlmAgent(
     name="extractor_agent",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction=(
         "You are an expert technical interviewer. Review the candidate's CV and project documentation "
         "provided below:\n\n"

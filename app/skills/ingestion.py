@@ -17,7 +17,7 @@ class ParsedInterviewInput(BaseModel):
 # LLM Agent to parse plain conversational text or pastes into structured fields
 ingestion_parser = LlmAgent(
     name="ingestion_parser",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction=(
         "You are an assistant that parses interview materials. "
         "Analyze the candidate's input text (which may be conversational or a direct paste). "
@@ -61,6 +61,11 @@ async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
     role = ctx.state.get("role") or node_input.role
     parsed_pdf = ctx.state.get("parsed_pdf")
     
+    # Print the cv_text length to logs at the start of each execution/resume
+    state_cv_len = len(ctx.state.get("cv_text") or "")
+    input_cv_len = len(node_input.cv_text or "")
+    print(f"[validate_ingestion] cv_text length in state: {state_cv_len}, in node_input: {input_cv_len}")
+    
     # 1. Check if there are any uploaded PDF artifacts in the session
     filenames = await ctx.list_artifacts()
     pdf_files = [f for f in filenames if f.lower().endswith(".pdf")]
@@ -96,17 +101,15 @@ async def validate_ingestion(ctx: Context, node_input: ParsedInterviewInput):
         )
         return
 
-    # 3. Check if we are missing CV, project docs, or target job role
-    if not cv_text.strip() or not doc_text.strip() or not role.strip():
+    # 3. Check if we are missing CV or target job role (project docs are optional)
+    if not cv_text.strip() or not role.strip():
         missing = []
         if not cv_text.strip():
             missing.append("CV/Resume")
-        if not doc_text.strip():
-            missing.append("Project Documentation")
         if not role.strip():
             missing.append("Target Job Role")
         
-        # Persist all currently extracted/parsed materials in the session state before pausing
+        # CRITICAL: persist state before pausing or this data will be lost
         yield Event(
             state={
                 "cv_text": cv_text,

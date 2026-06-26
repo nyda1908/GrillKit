@@ -18,22 +18,30 @@ async def conduct_interview(ctx: Context, node_input: Any):
         yield Event(output="interview_complete", route="complete")
         return
         
+    # Extract question text and expected concepts for the current turn
+    current_question = questions[current_index]
+    if isinstance(current_question, dict):
+        q_text = current_question.get("text", "")
+        expected_concepts = current_question.get("expected_concepts", [])
+    else:
+        q_text = getattr(current_question, "text", str(current_question))
+        expected_concepts = getattr(current_question, "expected_concepts", [])
+        
     interrupt_id_main = f"q_{current_index}"
     interrupt_id_followup = f"f_{current_index}"
     
     # 2. Check if we are in the "main" phase and the user has just answered
     if current_phase == "main" and ctx.resume_inputs and interrupt_id_main in ctx.resume_inputs:
         user_answer = ctx.resume_inputs[interrupt_id_main]
-        current_question = questions[current_index]
         
         # Save their main answer to state, transition to "follow_up" phase, and route to follow-up generator
         yield Event(
             output={
-                "main_question": current_question,
+                "main_question": q_text,
                 "main_answer": user_answer
             },
             state={
-                "current_main_question": current_question,
+                "current_main_question": q_text,
                 "current_main_answer": user_answer,
                 "current_phase": "follow_up"
             },
@@ -48,11 +56,12 @@ async def conduct_interview(ctx: Context, node_input: Any):
         main_answer = ctx.state.get("current_main_answer")
         followup_question = ctx.state.get("current_follow_up_question")
         
-        # We now have both answers! Yield them together to trigger the evaluator agent
+        # We now have both answers! Yield them together with the expected concepts to trigger the evaluator agent
         yield Event(
             output={
                 "question": main_question,
                 "answer": main_answer,
+                "expected_concepts": ", ".join(expected_concepts),
                 "followup_question": followup_question,
                 "followup_answer": followup_answer
             },
@@ -62,10 +71,9 @@ async def conduct_interview(ctx: Context, node_input: Any):
         
     # 4. If the user hasn't answered yet, ask the appropriate question based on the current phase
     if current_phase == "main":
-        current_question = questions[current_index]
         yield RequestInput(
             interrupt_id=interrupt_id_main,
-            message=f"\n[Question {current_index + 1}/{len(questions)}] {current_question}\n"
+            message=f"\n[Question {current_index + 1}/{len(questions)}] {q_text}\n"
         )
         return
     elif current_phase == "follow_up":

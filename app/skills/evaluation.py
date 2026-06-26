@@ -21,15 +21,19 @@ evaluator_agent = LlmAgent(
     instruction=(
         "You are an expert technical interviewer. Evaluate the candidate's answers to the main question "
         "and the subsequent follow-up question together. "
-        "Review their responses for:\n"
-        "1. Accuracy: Are the answers technically correct? Are there any errors or fabrications?\n"
-        "2. Depth: Do they demonstrate a deep, thorough understanding of the architecture, design choices, "
-        "and trade-offs, or just surface-level knowledge? Did they successfully explain the 'how' and 'why'?\n"
-        "3. Vagueness: Were their answers specific and concrete, or did they remain hand-wavy and avoid details "
-        "even after being pressed in the follow-up?\n\n"
-        "Provide detailed, objective feedback for each aspect, score the overall turn from 1 to 10, "
-        "and determine if this represents a weak area. "
-        "Identify the specific technical topic of the weak area if applicable."
+        "\n\n"
+        "You must use the following expected technical concepts as a strict grounding rubric to assess accuracy:\n"
+        "EXPECTED TECHNICAL CONCEPTS: {expected_concepts}\n\n"
+        "Evaluate the answers across these criteria:\n"
+        "1. Accuracy (Primary Signal): Explicitly count and list how many of the expected technical concepts "
+        "the candidate successfully mentioned and correctly explained in their answers (e.g., 'Covered 2/4 expected concepts: concept_A, concept_B. Missing: concept_C, concept_D'). "
+        "Use this concept coverage ratio as the primary signal and objective metric for the accuracy evaluation and final score.\n"
+        "2. Depth: Do they demonstrate a deep understanding of the engineering choices, trade-offs, and mechanics, "
+        "or is it just surface-level knowledge? Did they successfully explain the 'how' and 'why'?\n"
+        "3. Vagueness: Were their answers specific, concrete, and evidence-based, or did they remain hand-wavy "
+        "and high-level even after the skeptical follow-up?\n\n"
+        "Provide detailed, objective feedback for each aspect, score the overall turn from 1 to 10 (highly aligned with "
+        "concept coverage), and determine if this represents a weak area. Identify the specific technical topic if applicable."
     ),
     output_schema=EvaluationResult,
     generate_content_config=types.GenerateContentConfig(

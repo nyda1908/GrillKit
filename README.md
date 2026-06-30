@@ -182,6 +182,20 @@ GrillKit/
 
 ---
 
+## Evaluation
+
+A manual evaluation was conducted on one complete 11-question interview session using a multi-project CV (covering LOB-Transformer, GrillKit itself, and LexRAG projects). The session transcript was reviewed question-by-question against two binary criteria: (1) did the question avoid generic "explain X" phrasing and instead force why/tradeoff/failure-mode reasoning, and (2) did the follow-up specifically target a vague or unsupported claim in the actual answer rather than asking a generic second question.
+
+Results from this single session:
+- Adversarial question rate: 11/11 (100%) — no question used generic "explain X" phrasing
+- Follow-up relevance: 11/11 (100%) — every follow-up targeted a specific claim in the prior answer
+- Difficulty progression: question difficulty followed the intended foundational → tradeoffs → production → incident response arc
+- Report accuracy: the final report's strong/weak area classification matched the candidate's own self-assessment of which answers had genuine depth versus admitted gaps
+
+Caveat: This is a single, manually self-graded session, not a statistically validated benchmark across multiple runs or multiple users/CVs. A more rigorous evaluation would run this across 10-20 sessions with different CVs and ideally an independent rater rather than the candidate self-grading their own session.
+
+---
+
 ## Author
 
 Nidhi Maheshwari — Mathematics and Computing, IIT Kharagpur  

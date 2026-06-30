@@ -17,7 +17,7 @@ class ParsedInterviewInput(BaseModel):
 # LLM Agent to parse plain conversational text or pastes into structured fields
 ingestion_parser = LlmAgent(
     name="ingestion_parser",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction=(
         "You are an assistant that parses interview materials. "
         "Analyze the candidate's input text (which may be conversational or a direct paste). "

@@ -46,7 +46,7 @@ def initialize_interview(node_input: QuestionList) -> Event:
     """Initializes the workflow state with the generated questions and tracking lists."""
     return Event(
         state={
-            "questions": node_input.questions,
+            "questions": [q.model_dump() for q in node_input.questions],
             "current_index": 0,
             "current_phase": "main",
             "evaluations": [],

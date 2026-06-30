@@ -15,7 +15,7 @@ class QuestionList(BaseModel):
 
 question_generator_agent = LlmAgent(
     name="question_generator_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction=(
         "You are a highly skeptical, senior software architect conducting a technical interview. "
         "Review the target job role and the extracted claims, technical choices, metrics, and decisions "

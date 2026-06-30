@@ -9,7 +9,7 @@ class FollowUpQuestion(BaseModel):
 
 follow_up_generator = LlmAgent(
     name="follow_up_generator",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction=(
         "You are a highly skeptical, senior software architect conducting a technical interview. "
         "The candidate was asked a main question and gave an answer. "

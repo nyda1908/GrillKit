@@ -61,7 +61,7 @@ START
 
 - **Agent Framework**: Google ADK 2.0
 - **Scaffolding**: Agents CLI
-- **Model**: Gemini 2.0 Flash
+- **Model**: Gemini 2.5 Flash
 - **PDF Parsing**: pypdf
 - **Language**: Python 3.11+
 - **Package Manager**: uv
